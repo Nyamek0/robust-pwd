@@ -10,8 +10,9 @@ import { VaultService } from '../src/main/vault'
 import { entropyForStyle } from '../src/shared/entropy'
 
 const MASTER = 'correct horse battery staple'
+const PYTHON = process.platform === 'win32' ? 'python' : 'python3'
 const PYTHON_AVAILABLE =
-  spawnSync('python3', ['-c', 'import cryptography'], { encoding: 'utf8' }).status === 0
+  spawnSync(PYTHON, ['-c', 'import cryptography'], { encoding: 'utf8' }).status === 0
 
 let directory: string
 const vaultPath = () => join(directory, 'vault.enc')
@@ -219,9 +220,9 @@ describe('coffre', () => {
 
 describe.skipIf(!PYTHON_AVAILABLE)('compatibilité avec pwdgen.py', () => {
   function runPython(code: string, args: string[]): string {
-    const result = spawnSync('python3', ['-c', code, ...args], { encoding: 'utf8' })
+    const result = spawnSync(PYTHON, ['-c', code, ...args], { encoding: 'utf8' })
     if (result.status !== 0) {
-      throw new Error(`python3 a échoué : ${result.stderr}`)
+      throw new Error(`${PYTHON} a échoué : ${result.stderr}`)
     }
     return result.stdout
   }
