@@ -4,6 +4,98 @@ Générateur de mots de passe robuste avec coffre chiffré local.
 
 Génère des mots de passe forts à la manière d'Apple (prononçable) ou Google (aléatoire), et les sauvegarde dans un fichier chiffré AES-256-GCM sur ta machine. Aucune donnée n'est envoyée sur internet.
 
+Deux interfaces, un seul coffre : un **CLI Python** (`pwdgen.py`) et une **application desktop Electron + React** (`desktop/`).
+
+---
+
+## Interface desktop (Electron + React)
+
+L'application de bureau lit et écrit **le même coffre** que le CLI (`~/.robust-pwd/vault.enc`), au même format binaire. Tu peux passer de l'un à l'autre sans migration.
+
+![Interface desktop de robust-pwd](desktop/docs/screenshot.png)
+
+### Lancer l'application
+
+Prérequis : Node.js 22.12+ et npm.
+
+```bash
+cd desktop
+npm install
+npm run dev
+```
+
+### Compiler, tester, packager
+
+```bash
+cd desktop
+npm run build      # bundles de production dans out/
+npm run typecheck  # vérification TypeScript stricte
+npm test           # tests du coffre + compatibilité avec pwdgen.py
+npm run dist       # installeur (.dmg, .exe ou .AppImage) dans release/
+```
+
+> L'application n'est pas signée. Au premier lancement sur macOS, utilise clic droit → « Ouvrir » si Gatekeeper la bloque.
+
+### Ce que l'app ajoute au CLI
+
+| Fonction | Détail |
+|---|---|
+| Déverrouillage / création du coffre | Écran dédié, confirmation et jauge de robustesse du mot de passe maître |
+| Navigation | Liste recherchable, détail d'une entrée, suppression avec confirmation |
+| Générateur | Styles Apple, Google ou les deux, longueur réglable (12–48), régénération instantanée |
+| Import | Saisie manuelle ou fichier CSV / TSV / JSON, doublons et lignes invalides ignorés |
+| Entropie | Estimation affichée en bits pour chaque proposition et chaque entrée générée |
+| Presse-papier | Copie en un clic, vidage automatique après 30 s si le contenu n'a pas changé |
+| Verrouillage | Manuel (bouton) ou automatique après 5 minutes d'inactivité |
+
+### Raccourcis clavier
+
+| Raccourci | Action |
+|---|---|
+| `⌘N` / `Ctrl+N` | Nouveau mot de passe |
+| `⌘L` / `Ctrl+L` | Verrouiller le coffre |
+| `⌘F` / `Ctrl+F` | Rechercher |
+| `Échap` | Fermer la fenêtre modale |
+
+### Importer des mots de passe existants
+
+Deux méthodes, entièrement locales :
+
+1. **À la main** — bouton « Nouveau », onglet « Saisir » : donne un mot clé et colle le mot de passe à conserver. Il est enregistré tel quel (avec une estimation de robustesse).
+2. **Par fichier** — bouton « Importer » dans la barre du haut : sélectionne un fichier **CSV**, **TSV** ou **JSON**. Les doublons (même mot clé + même mot de passe), les lignes vides et les entrées invalides sont ignorés, puis un résumé s'affiche.
+
+Un fichier CSV peut utiliser une virgule, un point-virgule ou une tabulation. L'en-tête est facultatif, mais recommandé ; les colonnes reconnues sont `label`, `name`, `title`, `site`, `url`, `account`, `login`, `username` pour le mot clé, et `password`, `pass`, `secret`, `mot de passe` pour le mot de passe.
+
+```csv
+label,password
+GitHub,Kj#9mLpQ2$vXn8!wR#
+Banque,"Abc,def"
+```
+
+```json
+[
+  { "label": "GitHub", "password": "Kj#9mLpQ2$vXn8!wR#" },
+  { "name": "Banque", "secret": "Abc,def" }
+]
+```
+
+Les formats `{ "entries": [...] }` et les exports Bitwarden `{ "items": [{ "name", "login": { "password" } }] }` sont aussi acceptés. Limite : 5 Mo et 1 000 entrées par fichier. Les mots de passe importés portent le style `custom` (affiché « Importé ») et restent lisibles par le CLI Python.
+
+### Utiliser un autre coffre
+
+```bash
+ROBUST_PWD_VAULT=/chemin/vers/vault.enc npm run dev
+```
+
+### Sécurité côté desktop
+
+- Le coffre n'est déchiffré que dans le **processus principal** ; l'interface ne reçoit que les métadonnées, et un mot de passe n'est transmis qu'à la demande explicite (« Afficher » ou « Copier »).
+- `contextIsolation`, `sandbox`, `nodeIntegration: false`, aucune navigation externe, aucune requête réseau.
+- Preload minimal via `contextBridge`, CSP stricte injectée au build.
+- Écriture atomique (fichier temporaire puis `rename`), permissions `700` sur le dossier et `600` sur le fichier.
+- Instance unique : deux fenêtres ne peuvent pas écraser le même coffre.
+- Les tests `desktop/tests/vault.test.ts` vérifient qu'un coffre écrit par l'app est lisible par le CLI Python, et inversement.
+
 ---
 
 ## Fonctionnalités
@@ -19,8 +111,8 @@ Génère des mots de passe forts à la manière d'Apple (prononçable) ou Google
 
 ## Prérequis
 
-- **Python 3.8+**
-- **pip**
+- **Python 3.8+** et **pip** pour le CLI
+- **Node.js 22.12+** et **npm** pour l'interface desktop (facultatif)
 
 Vérifier ta version de Python :
 ```bash
