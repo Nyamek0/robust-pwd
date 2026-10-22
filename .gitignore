@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.DS_Store
+*.enc
+
+# Interface desktop
+desktop/node_modules/
+desktop/out/
+desktop/release/
+desktop/dist/
+
+# Configuration locale des outils
+.claude/settings.local.json
