@@ -1,5 +1,7 @@
 # robust-pwd
 
+[![CI](https://github.com/Nyamek0/robust-pwd/actions/workflows/ci.yml/badge.svg)](https://github.com/Nyamek0/robust-pwd/actions/workflows/ci.yml)
+
 Générateur de mots de passe robuste avec coffre chiffré local.
 
 Génère des mots de passe forts à la manière d'Apple (prononçable) ou Google (aléatoire), et les sauvegarde dans un fichier chiffré AES-256-GCM sur ta machine. Aucune donnée n'est envoyée sur internet.
@@ -14,7 +16,28 @@ L'application de bureau lit et écrit **le même coffre** que le CLI (`~/.robust
 
 ![Interface desktop de robust-pwd](desktop/docs/screenshot.png)
 
-### Lancer l'application
+### Télécharger l'application
+
+Les installeurs sont générés par GitHub Actions et publiés dans les [Releases](https://github.com/Nyamek0/robust-pwd/releases/latest) :
+
+| Système | Fichier |
+|---|---|
+| macOS (Apple Silicon et Intel) | `robust-pwd-<version>-universal.dmg` |
+| Windows 10/11 (x64) | `robust-pwd-Setup-<version>-x64.exe` |
+| Linux (x64) | `robust-pwd-<version>-x64.AppImage` |
+
+Les builds ne sont pas signés ni notarisés. Au premier lancement :
+
+- **macOS** : clic droit sur l'application → **Ouvrir**. En cas de blocage persistant :
+  ```bash
+  xattr -dr com.apple.quarantine /Applications/robust-pwd.app
+  ```
+- **Windows** : SmartScreen → **Informations complémentaires** → **Exécuter quand même**.
+- **Linux** : `chmod +x robust-pwd-*.AppImage` puis lance le fichier.
+
+Chaque Release contient aussi `SHA256SUMS.txt` pour vérifier l'intégrité des fichiers.
+
+### Lancer depuis les sources
 
 Prérequis : Node.js 22.12+ et npm.
 
@@ -31,8 +54,10 @@ cd desktop
 npm run build      # bundles de production dans out/
 npm run typecheck  # vérification TypeScript stricte
 npm test           # tests du coffre + compatibilité avec pwdgen.py
-npm run dist       # installeur (.dmg, .exe ou .AppImage) dans release/
+npm run dist       # DMG universel, .exe ou .AppImage dans release/
 ```
+
+La CI GitHub Actions teste macOS, Windows et Linux à chaque push. Un tag `v*` déclenche la construction et la publication des installeurs dans les Releases.
 
 > L'application n'est pas signée. Au premier lancement sur macOS, utilise clic droit → « Ouvrir » si Gatekeeper la bloque.
 
@@ -397,3 +422,9 @@ rm ~/.local/bin/robust-pwd
 # Supprimer le dossier cloné
 rm -rf /chemin/vers/robust-pwd
 ```
+
+---
+
+## Licence
+
+Ce projet est distribué sous licence MIT. Voir [LICENSE](LICENSE).
