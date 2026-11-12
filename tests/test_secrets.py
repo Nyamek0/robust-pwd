@@ -272,7 +272,13 @@ class CliSecretsEndToEndTest(unittest.TestCase):
         self.tmp.cleanup()
 
     def _run_cli(self, argv, stdin_text=""):
-        with mock.patch.object(sys, "stdin", io.StringIO(stdin_text)):
+        import contextlib
+        buf_out, buf_err = io.StringIO(), io.StringIO()
+        with (
+            mock.patch.object(sys, "stdin", io.StringIO(stdin_text)),
+            contextlib.redirect_stdout(buf_out),
+            contextlib.redirect_stderr(buf_err),
+        ):
             cli.main(argv)
 
     def test_cli_workflow_and_run_injection(self):
@@ -280,7 +286,7 @@ class CliSecretsEndToEndTest(unittest.TestCase):
         self._run_cli(["secrets", "--master-stdin", "project", "add", "demo"], f"{MASTER}\n")
 
         with mock.patch("getpass.getpass", side_effect=[MASTER, "super_secret_val"]):
-            cli.main(["secrets", "set", "demo", "local", "APP_SECRET", "--masked"])
+            self._run_cli(["secrets", "set", "demo", "local", "APP_SECRET", "--masked"])
 
         # Refuse KEY=value en argument
         with self.assertRaises(SystemExit):

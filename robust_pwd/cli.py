@@ -229,6 +229,14 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv=None) -> None:
     import sys
 
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if callable(reconfigure):
+            try:
+                reconfigure(encoding="utf-8", errors="replace")
+            except Exception:
+                pass
+
     # Pour « robust-pwd secrets run [projet] [env] -- <commande...> »,
     # on isole les arguments après « -- » avant argparse afin que les options
     # de la commande enfant (ex. -c, --version) ne soient pas consommées par argparse.
