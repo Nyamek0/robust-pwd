@@ -53,8 +53,8 @@
           "to": "bin/glance-auth"
         },
         {
-          "from": "native/glance-auth/.build/release/GlanceAuth_GlanceAuth.bundle",
-          "to": "bin/GlanceAuth_GlanceAuth.bundle"
+          "from": "native/glance-auth/.build/release/glance-auth_GlanceAuth.bundle",
+          "to": "bin/glance-auth_GlanceAuth.bundle"
         }
       ],
       "target": [
