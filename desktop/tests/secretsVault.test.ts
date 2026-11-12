@@ -243,7 +243,10 @@ describe('plan de synchronisation et fournisseurs', () => {
 
 describe.skipIf(!PYTHON_AVAILABLE)('compatibilité croisée avec Python (secrets.enc + sealed box)', () => {
   function runPython(code: string, args: string[]): string {
-    const result = spawnSync(PYTHON, ['-c', code, ...args], { encoding: 'utf8' })
+    const result = spawnSync(PYTHON, ['-c', code, ...args], {
+      encoding: 'utf8',
+      env: { ...process.env, PYTHONUTF8: '1', PYTHONIOENCODING: 'utf-8' },
+    })
     if (result.status !== 0) {
       throw new Error(`${PYTHON} a échoué : ${result.stderr}`)
     }
@@ -323,7 +326,7 @@ describe.skipIf(!PYTHON_AVAILABLE)('compatibilité croisée avec Python (secrets
       [REPO_ROOT, sealedByTs, privRaw.toString('base64'), pubB64],
     )
       .trim()
-      .split('\n')
+      .split(/\r?\n/)
 
     expect(openedByPy[0]).toBe('depuis-ts ☕')
     expect(openSealedBox(openedByPy[1], privRaw).toString('utf8')).toBe('depuis-python 🚀')
