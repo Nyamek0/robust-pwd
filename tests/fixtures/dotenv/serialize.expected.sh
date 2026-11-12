@@ -1,0 +1,11 @@
+export PLAIN='abc-123_./:@%+,='
+export EMPTY=''
+export SPACE='hello world'
+export DOLLAR='$HOME'
+export HASH='a#b'
+export DQUOTE='say "hi"'
+export SQUOTE='it'\''s'
+export MULTI='l1
+l2	t\b'
+export BOTH='it'\''s "x"'
+export UNICODE='café ☕'

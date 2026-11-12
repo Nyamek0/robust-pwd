@@ -6,10 +6,13 @@ import { ConfirmDialog } from './components/ConfirmDialog'
 import { AddPasswordDialog, type SaveResult } from './components/AddPasswordDialog'
 import { Toasts, type ToastItem, type ToastKind } from './components/Toasts'
 import { VaultScreen } from './components/VaultScreen'
+import { CodeIcon, KeyIcon } from './components/icons'
+import { SecretsWorkspace } from './components/secrets/SecretsWorkspace'
 
 const api = window.robustPwd
 
 type Phase = 'loading' | 'setup' | 'locked' | 'unlocked'
+type ActiveWorkspace = 'passwords' | 'secrets'
 
 function useToasts() {
   const [toasts, setToasts] = useState<ToastItem[]>([])
@@ -45,6 +48,7 @@ function useToasts() {
 }
 
 export default function App() {
+  const [workspace, setWorkspace] = useState<ActiveWorkspace>('passwords')
   const [phase, setPhase] = useState<Phase>('loading')
   const [entries, setEntries] = useState<EntryMeta[]>([])
   const [selectedId, setSelectedId] = useState<number | null>(null)
@@ -299,7 +303,7 @@ export default function App() {
   }, [deleteTarget, push, refresh])
 
   useEffect(() => {
-    if (phase !== 'unlocked') return
+    if (workspace !== 'passwords' || phase !== 'unlocked') return
     const onKeyDown = (event: KeyboardEvent) => {
       const mod = event.metaKey || event.ctrlKey
       if (!mod) return
@@ -318,55 +322,95 @@ export default function App() {
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [phase, handleLock])
+  }, [workspace, phase, handleLock])
+
+  const workspaceSwitcher = (
+    <div className="workspace-switcher" role="tablist" aria-label="Espace">
+      <button
+        type="button"
+        role="tab"
+        aria-selected={workspace === 'passwords'}
+        className={`ws-tab ${workspace === 'passwords' ? 'is-active' : ''}`}
+        onClick={() => setWorkspace('passwords')}
+      >
+        <KeyIcon size={14} /> Mots de passe
+      </button>
+      <button
+        type="button"
+        role="tab"
+        aria-selected={workspace === 'secrets'}
+        className={`ws-tab ${workspace === 'secrets' ? 'is-active' : ''}`}
+        onClick={() => setWorkspace('secrets')}
+      >
+        <CodeIcon size={14} /> Secrets d’app
+      </button>
+    </div>
+  )
 
   return (
     <div className={`app ${isMac ? 'is-mac' : ''}`}>
-      {phase === 'loading' && (
-        <div className="boot">
-          <Brand large />
-          <div className="boot-bar" aria-hidden="true">
-            <span />
-          </div>
-          <p>Ouverture du coffre…</p>
-        </div>
+      {workspace === 'secrets' ? (
+        <SecretsWorkspace pushToast={push} workspaceSwitcher={workspaceSwitcher} />
+      ) : (
+        <>
+          {phase === 'loading' && (
+            <div className="boot">
+              <Brand large />
+              <div className="boot-bar" aria-hidden="true">
+                <span />
+              </div>
+              <p>Ouverture du coffre…</p>
+            </div>
+          )}
+
+          {(phase === 'setup' || phase === 'locked') && (
+            <div className="app-shell">
+              <header className="topbar">
+                <Brand />
+                {workspaceSwitcher}
+                <div className="topbar-spacer" />
+              </header>
+              <AuthScreen
+                mode={phase}
+                onSubmit={phase === 'setup' ? handleSetup : handleUnlock}
+              />
+            </div>
+          )}
+
+          {phase === 'unlocked' && (
+            <VaultScreen
+              entries={entries}
+              selectedId={selectedId}
+              search={search}
+              searchRef={searchRef}
+              autoLockMinutes={Math.round(autoLockSeconds / 60)}
+              importing={importing}
+              onSearchChange={setSearch}
+              onSelect={setSelectedId}
+              onCopy={copyEntry}
+              onReveal={reveal}
+              onAskDelete={setDeleteTarget}
+              onNew={() => setAddOpen(true)}
+              onImport={() => void handleImport()}
+              onLock={() => void handleLock()}
+              workspaceSwitcher={workspaceSwitcher}
+            />
+          )}
+
+          <AddPasswordDialog
+            open={phase === 'unlocked' && addOpen}
+            onClose={() => setAddOpen(false)}
+            onSave={saveEntry}
+            onCopy={(text) => void copyText(text)}
+          />
+
+          <ConfirmDialog
+            entry={phase === 'unlocked' ? deleteTarget : null}
+            onClose={() => setDeleteTarget(null)}
+            onConfirm={confirmDelete}
+          />
+        </>
       )}
-
-      {(phase === 'setup' || phase === 'locked') && (
-        <AuthScreen mode={phase} onSubmit={phase === 'setup' ? handleSetup : handleUnlock} />
-      )}
-
-      {phase === 'unlocked' && (
-        <VaultScreen
-          entries={entries}
-          selectedId={selectedId}
-          search={search}
-          searchRef={searchRef}
-          autoLockMinutes={Math.round(autoLockSeconds / 60)}
-          importing={importing}
-          onSearchChange={setSearch}
-          onSelect={setSelectedId}
-          onCopy={copyEntry}
-          onReveal={reveal}
-          onAskDelete={setDeleteTarget}
-          onNew={() => setAddOpen(true)}
-          onImport={() => void handleImport()}
-          onLock={() => void handleLock()}
-        />
-      )}
-
-      <AddPasswordDialog
-        open={phase === 'unlocked' && addOpen}
-        onClose={() => setAddOpen(false)}
-        onSave={saveEntry}
-        onCopy={(text) => void copyText(text)}
-      />
-
-      <ConfirmDialog
-        entry={phase === 'unlocked' ? deleteTarget : null}
-        onClose={() => setDeleteTarget(null)}
-        onConfirm={confirmDelete}
-      />
 
       <Toasts toasts={toasts} onDismiss={dismiss} />
     </div>

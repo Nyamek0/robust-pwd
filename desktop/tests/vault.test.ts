@@ -218,7 +218,7 @@ describe('coffre', () => {
   })
 })
 
-describe.skipIf(!PYTHON_AVAILABLE)('compatibilité avec pwdgen.py', () => {
+describe.skipIf(!PYTHON_AVAILABLE)('compatibilité avec le CLI Python (robust_pwd)', () => {
   function runPython(code: string, args: string[]): string {
     const result = spawnSync(PYTHON, ['-c', code, ...args], { encoding: 'utf8' })
     if (result.status !== 0) {
@@ -233,12 +233,11 @@ describe.skipIf(!PYTHON_AVAILABLE)('compatibilité avec pwdgen.py', () => {
         'import sys',
         'from pathlib import Path',
         'sys.path.insert(0, sys.argv[1])',
-        'import pwdgen',
-        'pwdgen.VAULT_PATH = Path(sys.argv[2])',
-        'pwdgen._save_vault({"entries": [',
+        'from robust_pwd import vault',
+        'vault.save_vault({"entries": [',
         '  {"id": 7, "label": "GitHub", "password": "Kj#9mLpQ2$vXn8!wR#", "style": "google",',
         '   "created_at": "2026-10-22T12:00:00"}',
-        ']}, sys.argv[3])',
+        ']}, sys.argv[3], Path(sys.argv[2]))',
       ].join('\n'),
       [fileURLToPath(new URL('../..', import.meta.url)), vaultPath(), MASTER],
     )
@@ -261,9 +260,8 @@ describe.skipIf(!PYTHON_AVAILABLE)('compatibilité avec pwdgen.py', () => {
         'import json, sys',
         'from pathlib import Path',
         'sys.path.insert(0, sys.argv[1])',
-        'import pwdgen',
-        'pwdgen.VAULT_PATH = Path(sys.argv[2])',
-        'print(json.dumps(pwdgen._load_vault(sys.argv[3])))',
+        'from robust_pwd import vault',
+        'print(json.dumps(vault.load_vault(sys.argv[3], Path(sys.argv[2]))))',
       ].join('\n'),
       [fileURLToPath(new URL('../..', import.meta.url)), vaultPath(), MASTER],
     )

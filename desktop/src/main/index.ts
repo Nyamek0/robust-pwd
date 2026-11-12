@@ -2,10 +2,13 @@ import { app, BrowserWindow, Menu, type MenuItemConstructorOptions } from 'elect
 import { join } from 'node:path'
 import type { LockReason } from '../shared/types'
 import { clearSensitiveClipboard, registerIpc } from './ipc'
+import { registerSecretsIpc } from './ipcSecrets'
+import { SecretsService } from './secretsVault'
 import { VaultService } from './vault'
 
 const isDev = !app.isPackaged
 const vault = new VaultService()
+const secrets = new SecretsService()
 
 let mainWindow: BrowserWindow | null = null
 
@@ -69,6 +72,13 @@ vault.on('locked', (reason: LockReason) => {
   }
 })
 
+secrets.on('locked', (reason: LockReason) => {
+  void clearSensitiveClipboard()
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('secrets:locked', reason)
+  }
+})
+
 const hasSingleInstanceLock = app.requestSingleInstanceLock()
 
 if (!hasSingleInstanceLock) {
@@ -83,6 +93,7 @@ if (!hasSingleInstanceLock) {
   app.whenReady().then(() => {
     installMenu()
     registerIpc(vault)
+    registerSecretsIpc(secrets)
     createWindow()
 
     app.on('activate', () => {
@@ -96,6 +107,7 @@ if (!hasSingleInstanceLock) {
 
   app.on('before-quit', () => {
     vault.lock('quit')
+    secrets.lock('quit')
     void clearSensitiveClipboard()
   })
 }

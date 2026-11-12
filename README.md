@@ -109,17 +109,18 @@ Les formats `{ "entries": [...] }` et les exports Bitwarden `{ "items": [{ "name
 ### Utiliser un autre coffre
 
 ```bash
-ROBUST_PWD_VAULT=/chemin/vers/vault.enc npm run dev
+ROBUST_PWD_VAULT=/chemin/vers/vault.enc ROBUST_PWD_SECRETS_VAULT=/chemin/vers/secrets.enc npm run dev
 ```
 
 ### Sécurité côté desktop
 
-- Le coffre n'est déchiffré que dans le **processus principal** ; l'interface ne reçoit que les métadonnées, et un mot de passe n'est transmis qu'à la demande explicite (« Afficher » ou « Copier »).
-- `contextIsolation`, `sandbox`, `nodeIntegration: false`, aucune navigation externe, aucune requête réseau.
+- Les coffres (`vault.enc` et `secrets.enc`) ne sont déchiffrés que dans le **processus principal** ; l'interface ne reçoit que les métadonnées, et une valeur secrète n'est transmise qu'à la demande explicite (« Afficher » ou « Copier »).
+- `contextIsolation`, `sandbox`, `nodeIntegration: false`, aucune navigation externe.
+- Aucune requête réseau depuis le renderer (CSP stricte). La synchronisation optionnelle GitLab / GitHub part uniquement du **processus principal**, en **HTTPS**, vers l'hôte configuré et sur action explicite.
 - Preload minimal via `contextBridge`, CSP stricte injectée au build.
 - Écriture atomique (fichier temporaire puis `rename`), permissions `700` sur le dossier et `600` sur le fichier.
 - Instance unique : deux fenêtres ne peuvent pas écraser le même coffre.
-- Les tests `desktop/tests/vault.test.ts` vérifient qu'un coffre écrit par l'app est lisible par le CLI Python, et inversement.
+- Les tests `desktop/tests/vault.test.ts` et `desktop/tests/secretsVault.test.ts` vérifient qu'un coffre écrit par l'app est lisible par le CLI Python, et inversement.
 
 ---
 
@@ -325,6 +326,62 @@ Tu peux aussi aller directement à une action :
 | `robust-pwd list` | Lister tous les mots de passe (sans afficher les mots de passe) |
 | `robust-pwd show` | Afficher le mot de passe d'une entrée |
 | `robust-pwd delete` | Supprimer une entrée |
+| `robust-pwd secrets …` | Gérer le coffre séparé de secrets applicatifs (`~/.robust-pwd/secrets.enc`) |
+
+---
+
+## Coffre de secrets applicatifs (`.env`, GitLab CI/CD, GitHub Actions)
+
+En plus du coffre de mots de passe personnels (`vault.enc`), `robust-pwd` propose un **second coffre chiffré indépendant** (`~/.robust-pwd/secrets.enc`), doté de son propre mot de passe maître, pour organiser les variables d'environnement par **projet** et par **environnement** (`local`, `staging`, `production`).
+
+Spécification complète : [docs/secrets-format.md](docs/secrets-format.md).
+
+### Commandes principales
+
+```bash
+# Initialiser le coffre de secrets
+robust-pwd secrets init
+
+# Créer un projet (crée local, staging, production par défaut)
+robust-pwd secrets project add mon-api --desc "Backend principal"
+robust-pwd secrets project list
+
+# Définir une variable (saisie masquée, --stdin ou génération aléatoire)
+robust-pwd secrets set mon-api local DATABASE_URL
+robust-pwd secrets set mon-api production JWT_SECRET --generate hex:32 --masked
+
+# Lister les clés (sans afficher les valeurs) ou récupérer une valeur
+robust-pwd secrets list mon-api local
+robust-pwd secrets get mon-api local DATABASE_URL --copy
+
+# Importer / exporter un fichier .env
+robust-pwd secrets import mon-api local .env
+robust-pwd secrets export mon-api local --format dotenv -o .env.local
+
+# Recommandé en local : injecter les variables en mémoire sans fichier .env sur disque
+robust-pwd secrets run mon-api local -- npm start
+
+# Relier le dossier courant à un projet (.robust-pwd.json, sans secret, versionnable)
+robust-pwd secrets link-dir mon-api --env local
+robust-pwd secrets run -- npm start
+```
+
+### Synchronisation optionnelle GitLab CI/CD et GitHub Actions
+
+```bash
+# Enregistrer un jeton (stocké chiffré dans secrets.enc)
+robust-pwd secrets remote login gitlab
+robust-pwd secrets remote login github
+
+# Relier le projet local et définir la portée d'un environnement
+robust-pwd secrets remote link mon-api gitlab mon-groupe/mon-api
+robust-pwd secrets remote scope mon-api production production
+
+# Prévisualiser le plan, envoyer ou récupérer (GitLab)
+robust-pwd secrets remote diff mon-api --env production
+robust-pwd secrets remote push mon-api --env production
+robust-pwd secrets remote pull mon-api --env production
+```
 
 ---
 

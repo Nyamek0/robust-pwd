@@ -4,6 +4,12 @@ __pycache__/
 venv/
 .DS_Store
 *.enc
+!tests/fixtures/**/*.enc
+
+# Secrets applicatifs exportés
+.env
+.env.*
+!.env.example
 
 # Interface desktop
 desktop/node_modules/

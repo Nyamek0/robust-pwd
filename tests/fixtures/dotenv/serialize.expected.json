@@ -1,0 +1,12 @@
+{
+  "PLAIN": "abc-123_./:@%+,=",
+  "EMPTY": "",
+  "SPACE": "hello world",
+  "DOLLAR": "$HOME",
+  "HASH": "a#b",
+  "DQUOTE": "say \"hi\"",
+  "SQUOTE": "it's",
+  "MULTI": "l1\nl2\tt\\b",
+  "BOTH": "it's \"x\"",
+  "UNICODE": "café ☕"
+}

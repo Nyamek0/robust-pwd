@@ -1,0 +1,22 @@
+{
+  "variables": [
+    {
+      "key": "A",
+      "value": "1"
+    },
+    {
+      "key": "B",
+      "value": "x\ny"
+    },
+    {
+      "key": "C",
+      "value": "3"
+    },
+    {
+      "key": "D",
+      "value": "4"
+    }
+  ],
+  "duplicates": [],
+  "invalid_lines": []
+}

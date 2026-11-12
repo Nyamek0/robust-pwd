@@ -19,7 +19,9 @@ export class VaultError extends Error {
       | 'LOCKED'
       | 'WEAK_MASTER'
       | 'NOT_FOUND'
-      | 'INVALID',
+      | 'INVALID'
+      | 'WRONG_KIND'
+      | 'UNSUPPORTED_VERSION',
     message: string,
   ) {
     super(message)

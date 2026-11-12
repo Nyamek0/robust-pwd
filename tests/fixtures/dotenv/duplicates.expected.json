@@ -1,0 +1,21 @@
+{
+  "variables": [
+    {
+      "key": "A",
+      "value": "third"
+    },
+    {
+      "key": "B",
+      "value": "3"
+    },
+    {
+      "key": "C",
+      "value": "2"
+    }
+  ],
+  "duplicates": [
+    "A",
+    "B"
+  ],
+  "invalid_lines": []
+}

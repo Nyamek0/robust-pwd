@@ -1,0 +1,34 @@
+{
+  "variables": [
+    {
+      "key": "PORT",
+      "value": "3000"
+    },
+    {
+      "key": "DATABASE_URL",
+      "value": "postgresql://user:pass@localhost:5432/app"
+    },
+    {
+      "key": "EMPTY",
+      "value": ""
+    },
+    {
+      "key": "INDENTED",
+      "value": "yes"
+    },
+    {
+      "key": "NODE_ENV",
+      "value": "production"
+    },
+    {
+      "key": "TABBED",
+      "value": "1"
+    },
+    {
+      "key": "SPACED",
+      "value": "around equals"
+    }
+  ],
+  "duplicates": [],
+  "invalid_lines": []
+}

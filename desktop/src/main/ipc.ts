@@ -20,7 +20,7 @@ const MAX_IMPORT_BYTES = 5 * 1024 * 1024
 let lastCopied: string | null = null
 let clipboardTimer: ReturnType<typeof setTimeout> | null = null
 
-async function copySensitive(text: string): Promise<number> {
+export async function copySensitive(text: string): Promise<number> {
   await clipboard.writeText(text)
   lastCopied = text
   if (clipboardTimer) clearTimeout(clipboardTimer)

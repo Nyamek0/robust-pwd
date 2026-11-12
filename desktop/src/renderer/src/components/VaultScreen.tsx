@@ -1,4 +1,4 @@
-import { useMemo, type RefObject } from 'react'
+import { useMemo, type ReactNode, type RefObject } from 'react'
 import type { EntryMeta } from '@shared/types'
 import { EntryDetail } from './EntryDetail'
 import { Brand } from './Brand'
@@ -20,6 +20,7 @@ type Props = {
   onNew: () => void
   onImport: () => void
   onLock: () => void
+  workspaceSwitcher?: ReactNode
 }
 
 export function VaultScreen({
@@ -37,6 +38,7 @@ export function VaultScreen({
   onNew,
   onImport,
   onLock,
+  workspaceSwitcher,
 }: Props) {
   const selected = entries.find((entry) => entry.id === selectedId) ?? null
 
@@ -53,6 +55,7 @@ export function VaultScreen({
     <div className="app-shell">
       <header className="topbar">
         <Brand />
+        {workspaceSwitcher}
         <div className="topbar-spacer" />
         <button
           type="button"

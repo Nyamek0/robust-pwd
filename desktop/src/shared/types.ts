@@ -47,6 +47,8 @@ export interface GenerateRequest {
 
 export type IpcResult<T> = { ok: true; data: T } | { ok: false; error: string }
 
+import type { SecretsDesktopApi } from './secretsTypes'
+
 export interface DesktopApi {
   platform: string
   status: () => Promise<IpcResult<VaultStatus>>
@@ -63,4 +65,5 @@ export interface DesktopApi {
   importFile: () => Promise<IpcResult<ImportSummary>>
   touch: () => Promise<void>
   onLocked: (callback: (reason: LockReason) => void) => () => void
+  secrets: SecretsDesktopApi
 }
