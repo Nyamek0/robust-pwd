@@ -1,0 +1,34 @@
+{
+  "variables": [
+    {
+      "key": "A",
+      "value": "1"
+    },
+    {
+      "key": "B",
+      "value": "pass#word"
+    },
+    {
+      "key": "C",
+      "value": "#notacomment"
+    },
+    {
+      "key": "D",
+      "value": ""
+    },
+    {
+      "key": "E",
+      "value": "value"
+    },
+    {
+      "key": "F",
+      "value": "quoted # not comment"
+    },
+    {
+      "key": "G",
+      "value": "single # too"
+    }
+  ],
+  "duplicates": [],
+  "invalid_lines": []
+}

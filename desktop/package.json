@@ -1,6 +1,6 @@
 {
   "name": "robust-pwd-desktop",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "Interface desktop locale pour robust-pwd — générateur et coffre de mots de passe AES-256-GCM",
   "author": "robust-pwd",

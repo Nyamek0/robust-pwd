@@ -1,0 +1,42 @@
+[
+  {
+    "key": "PLAIN",
+    "value": "abc-123_./:@%+,="
+  },
+  {
+    "key": "EMPTY",
+    "value": ""
+  },
+  {
+    "key": "SPACE",
+    "value": "hello world"
+  },
+  {
+    "key": "DOLLAR",
+    "value": "$HOME"
+  },
+  {
+    "key": "HASH",
+    "value": "a#b"
+  },
+  {
+    "key": "DQUOTE",
+    "value": "say \"hi\""
+  },
+  {
+    "key": "SQUOTE",
+    "value": "it's"
+  },
+  {
+    "key": "MULTI",
+    "value": "l1\nl2\tt\\b"
+  },
+  {
+    "key": "BOTH",
+    "value": "it's \"x\""
+  },
+  {
+    "key": "UNICODE",
+    "value": "café ☕"
+  }
+]

@@ -1,4 +1,4 @@
-import { randomInt } from 'node:crypto'
+import { randomBytes, randomInt, randomUUID } from 'node:crypto'
 import { GOOGLE_DEFAULT_LENGTH, GOOGLE_MAX_LENGTH, GOOGLE_MIN_LENGTH } from '../shared/constants'
 import type { GenerateRequest, PasswordStyle } from '../shared/types'
 import { VaultError } from './crypto'
@@ -60,4 +60,57 @@ export function generatePassword(request: GenerateRequest): string {
   if (style === 'apple') return generateApple()
   if (style === 'google') return generateGoogle(request.length)
   throw new VaultError('INVALID', 'Style de mot de passe inconnu.')
+}
+
+function generateGoogleUnbounded(length: number): string {
+  const chars = [
+    pick('ABCDEFGHIJKLMNOPQRSTUVWXYZ'),
+    pick('abcdefghijklmnopqrstuvwxyz'),
+    pick('0123456789'),
+    pick(SYMBOLS),
+  ]
+  while (chars.length < length) chars.push(pick(GOOGLE_ALPHABET))
+  for (let i = chars.length - 1; i > 0; i -= 1) {
+    const j = randomInt(i + 1)
+    ;[chars[i], chars[j]] = [chars[j], chars[i]]
+  }
+  return chars.join('')
+}
+
+/**
+ * Équivalent de `generate_secret` dans `robust_pwd/generator.py` :
+ * `hex[:N]`, `base64[:N]`, `uuid`, `google[:N]`.
+ */
+export function generateSecret(spec: string): string {
+  if (typeof spec !== 'string' || !spec.trim()) {
+    throw new VaultError('INVALID', 'Spécification de secret vide.')
+  }
+  const [rawKind, ...rest] = spec.trim().toLowerCase().split(':')
+  const sizeText = rest.join(':')
+  if (!['hex', 'base64', 'uuid', 'google'].includes(rawKind)) {
+    throw new VaultError(
+      'INVALID',
+      `Type de secret inconnu : « ${rawKind} » (attendu : hex, base64, uuid, google).`,
+    )
+  }
+  if (rawKind === 'uuid') {
+    if (sizeText) throw new VaultError('INVALID', 'Le type « uuid » n’accepte pas de taille.')
+    return randomUUID()
+  }
+  const size = sizeText ? Number.parseInt(sizeText, 10) : 32
+  if (!Number.isInteger(size) || (sizeText && String(size) !== sizeText)) {
+    throw new VaultError('INVALID', `Taille invalide : « ${sizeText} ».`)
+  }
+  if (rawKind === 'google') {
+    if (size < 12 || size > 128) {
+      throw new VaultError('INVALID', 'La taille doit être comprise entre 12 et 128.')
+    }
+    return generateGoogleUnbounded(size)
+  }
+  if (size < 8 || size > 256) {
+    throw new VaultError('INVALID', 'La taille doit être comprise entre 8 et 256 octets.')
+  }
+  const raw = randomBytes(size)
+  if (rawKind === 'hex') return raw.toString('hex')
+  return raw.toString('base64url')
 }

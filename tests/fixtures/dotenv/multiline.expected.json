@@ -1,0 +1,22 @@
+{
+  "variables": [
+    {
+      "key": "PRIVATE_KEY",
+      "value": "-----BEGIN KEY-----\nabc123\n-----END KEY-----"
+    },
+    {
+      "key": "AFTER",
+      "value": "ok"
+    },
+    {
+      "key": "CERT",
+      "value": "first\nsecond"
+    },
+    {
+      "key": "NEXT",
+      "value": "1"
+    }
+  ],
+  "duplicates": [],
+  "invalid_lines": []
+}

@@ -6,10 +6,11 @@ import { StrengthMeter } from './StrengthMeter'
 
 type Props = {
   mode: 'setup' | 'locked'
+  variant?: 'passwords' | 'secrets'
   onSubmit: (master: string) => Promise<string | null>
 }
 
-export function AuthScreen({ mode, onSubmit }: Props) {
+export function AuthScreen({ mode, variant = 'passwords', onSubmit }: Props) {
   const [master, setMaster] = useState('')
   const [confirmation, setConfirmation] = useState('')
   const [revealed, setRevealed] = useState(false)
@@ -60,11 +61,23 @@ export function AuthScreen({ mode, onSubmit }: Props) {
           <div className="auth-icon">
             {isSetup ? <KeyIcon size={22} /> : <LockIcon size={22} />}
           </div>
-          <h1>{isSetup ? 'Créez votre coffre' : 'Déverrouillez votre coffre'}</h1>
+          <h1>
+            {variant === 'secrets'
+              ? isSetup
+                ? 'Créez votre coffre de secrets'
+                : 'Déverrouillez vos secrets d’app'
+              : isSetup
+                ? 'Créez votre coffre'
+                : 'Déverrouillez votre coffre'}
+          </h1>
           <p className="auth-sub">
-            {isSetup
-              ? 'Choisissez un mot de passe maître. Il protège tous vos mots de passe et n’est jamais stocké.'
-              : 'Saisissez votre mot de passe maître pour accéder à vos mots de passe.'}
+            {variant === 'secrets'
+              ? isSetup
+                ? 'Choisissez un mot de passe maître dédié à vos secrets applicatifs (.env, GitLab, GitHub) dans secrets.enc.'
+                : 'Saisissez le mot de passe maître de votre coffre secrets.enc pour accéder à vos projets et variables.'
+              : isSetup
+                ? 'Choisissez un mot de passe maître. Il protège tous vos mots de passe et n’est jamais stocké.'
+                : 'Saisissez votre mot de passe maître pour accéder à vos mots de passe.'}
           </p>
 
           <label className="field">

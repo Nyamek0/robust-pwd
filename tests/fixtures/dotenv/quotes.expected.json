@@ -1,0 +1,50 @@
+{
+  "variables": [
+    {
+      "key": "DQ",
+      "value": "hello world"
+    },
+    {
+      "key": "SQ",
+      "value": "hello world"
+    },
+    {
+      "key": "ESC",
+      "value": "line1\nline2\ttab \"q\" back\\slash"
+    },
+    {
+      "key": "LITERAL",
+      "value": "no \\n escape $HOME"
+    },
+    {
+      "key": "UNKNOWN",
+      "value": "keep \\x as is"
+    },
+    {
+      "key": "DOLLAR",
+      "value": "${NOT_EXPANDED} $ALSO"
+    },
+    {
+      "key": "UNQUOTED_DOLLAR",
+      "value": "$HOME/path"
+    },
+    {
+      "key": "EMPTY_DQ",
+      "value": ""
+    },
+    {
+      "key": "EMPTY_SQ",
+      "value": ""
+    },
+    {
+      "key": "INNER_SQ",
+      "value": "it's"
+    },
+    {
+      "key": "INNER_DQ",
+      "value": "say \"hi\""
+    }
+  ],
+  "duplicates": [],
+  "invalid_lines": []
+}

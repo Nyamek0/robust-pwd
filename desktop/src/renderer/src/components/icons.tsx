@@ -164,3 +164,40 @@ export function UploadIcon(props: IconProps) {
     </Svg>
   )
 }
+
+export function DownloadIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M12 4v12" />
+      <path d="m7 11 5 5 5-5" />
+      <path d="M4 16v2.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V16" />
+    </Svg>
+  )
+}
+
+export function CodeIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="m8 8-4 4 4 4" />
+      <path d="m16 8 4 4-4 4" />
+      <path d="m13.5 6-3 12" />
+    </Svg>
+  )
+}
+
+export function CloudIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M6.5 18h11a4 4 0 0 0 .7-7.9A5.5 5.5 0 0 0 7.4 8.5 4.2 4.2 0 0 0 6.5 18Z" />
+    </Svg>
+  )
+}
+
+export function EditIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z" />
+    </Svg>
+  )
+}

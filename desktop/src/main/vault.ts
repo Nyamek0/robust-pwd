@@ -117,8 +117,9 @@ export class VaultService extends EventEmitter {
     let file: VaultFile
     try {
       file = parseVaultFile(parsed)
-    } catch {
+    } catch (err) {
       key.fill(0)
+      if (err instanceof VaultError) throw err
       throw new VaultError('CORRUPT', 'Le contenu du coffre est invalide.')
     }
 
@@ -342,6 +343,12 @@ function toMeta(entry: EntryRecord): EntryMeta {
 }
 
 function parseVaultFile(raw: unknown): VaultFile {
+  if (raw && typeof raw === 'object' && 'kind' in raw && (raw as { kind?: unknown }).kind) {
+    throw new VaultError(
+      'WRONG_KIND',
+      'Ce fichier n’est pas un coffre de mots de passe (kind incompatible).',
+    )
+  }
   if (!raw || typeof raw !== 'object' || !Array.isArray((raw as { entries?: unknown }).entries)) {
     throw new Error('invalid vault')
   }
