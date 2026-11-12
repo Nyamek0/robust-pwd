@@ -8,13 +8,22 @@ type Props = {
   mode: 'setup' | 'locked'
   variant?: 'passwords' | 'secrets'
   onSubmit: (master: string) => Promise<string | null>
+  glanceAvailable?: boolean
+  onGlanceUnlock?: () => Promise<string | null>
 }
 
-export function AuthScreen({ mode, variant = 'passwords', onSubmit }: Props) {
+export function AuthScreen({
+  mode,
+  variant = 'passwords',
+  onSubmit,
+  glanceAvailable = false,
+  onGlanceUnlock,
+}: Props) {
   const [master, setMaster] = useState('')
   const [confirmation, setConfirmation] = useState('')
   const [revealed, setRevealed] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [glanceBusy, setGlanceBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const isSetup = mode === 'setup'
@@ -134,9 +143,31 @@ export function AuthScreen({ mode, variant = 'passwords', onSubmit }: Props) {
             </p>
           )}
 
-          <button className="btn btn-primary btn-block" type="submit" disabled={busy || !master}>
+          <button
+            className="btn btn-primary btn-block"
+            type="submit"
+            disabled={busy || glanceBusy || !master}
+          >
             {busy ? 'Déchiffrement…' : isSetup ? 'Créer le coffre' : 'Déverrouiller'}
           </button>
+
+          {!isSetup && glanceAvailable && onGlanceUnlock && (
+            <button
+              className="btn btn-ghost btn-block"
+              type="button"
+              disabled={busy || glanceBusy}
+              onClick={async () => {
+                setError(null)
+                setGlanceBusy(true)
+                const message = await onGlanceUnlock()
+                setGlanceBusy(false)
+                if (message) setError(message)
+              }}
+              style={{ marginTop: 8 }}
+            >
+              {glanceBusy ? 'Analyse du visage…' : 'Déverrouiller avec le visage (Glance)'}
+            </button>
+          )}
         </form>
 
         <p className="auth-foot">

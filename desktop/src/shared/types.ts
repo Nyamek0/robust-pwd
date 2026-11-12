@@ -47,6 +47,26 @@ export interface GenerateRequest {
 
 export type IpcResult<T> = { ok: true; data: T } | { ok: false; error: string }
 
+export interface GlanceStatus {
+  supported: boolean
+  available: boolean
+  enrolled: boolean
+  hasSecret: boolean
+  model?: string
+}
+
+export interface GlanceEnrollResult {
+  samples: number
+  model: string
+}
+
+export interface UpdateInfo {
+  currentVersion: string
+  latestVersion: string
+  releaseUrl: string
+  releaseName?: string
+}
+
 import type { SecretsDesktopApi } from './secretsTypes'
 
 export interface DesktopApi {
@@ -65,5 +85,15 @@ export interface DesktopApi {
   importFile: () => Promise<IpcResult<ImportSummary>>
   touch: () => Promise<void>
   onLocked: (callback: (reason: LockReason) => void) => () => void
+  glance: {
+    status: () => Promise<IpcResult<GlanceStatus>>
+    enroll: (master: string) => Promise<IpcResult<GlanceEnrollResult>>
+    unlock: () => Promise<IpcResult<UnlockResult>>
+    clear: () => Promise<IpcResult<null>>
+  }
+  app: {
+    checkUpdate: () => Promise<IpcResult<UpdateInfo | null>>
+    openRelease: (url: string) => Promise<IpcResult<null>>
+  }
   secrets: SecretsDesktopApi
 }

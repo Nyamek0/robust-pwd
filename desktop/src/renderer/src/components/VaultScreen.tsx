@@ -20,6 +20,9 @@ type Props = {
   onNew: () => void
   onImport: () => void
   onLock: () => void
+  glanceEnabled?: boolean
+  glanceAvailable?: boolean
+  onOpenGlance?: () => void
   workspaceSwitcher?: ReactNode
 }
 
@@ -38,6 +41,9 @@ export function VaultScreen({
   onNew,
   onImport,
   onLock,
+  glanceEnabled = false,
+  glanceAvailable = false,
+  onOpenGlance,
   workspaceSwitcher,
 }: Props) {
   const selected = entries.find((entry) => entry.id === selectedId) ?? null
@@ -69,6 +75,16 @@ export function VaultScreen({
         <button type="button" className="btn btn-ghost" onClick={onLock} title="Verrouiller (⌘L)">
           <LockIcon size={16} /> Verrouiller
         </button>
+        {glanceAvailable && onOpenGlance && (
+          <button
+            type="button"
+            className="btn btn-ghost"
+            onClick={onOpenGlance}
+            title="Configurer le déverrouillage facial Glance"
+          >
+            {glanceEnabled ? 'Glance actif' : 'Face Unlock'}
+          </button>
+        )}
         <button type="button" className="btn btn-primary" onClick={onNew} title="Nouveau (⌘N)">
           <PlusIcon size={16} /> Nouveau
         </button>

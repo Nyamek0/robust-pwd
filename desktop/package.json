@@ -1,6 +1,6 @@
 {
   "name": "robust-pwd-desktop",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "description": "Interface desktop locale pour robust-pwd — générateur et coffre de mots de passe AES-256-GCM",
   "author": "robust-pwd",
@@ -12,6 +12,7 @@
     "preview": "electron-vite preview",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "build:glance": "cd native/glance-auth && swift build -c release",
     "pack": "electron-vite build && electron-builder --dir",
     "dist": "electron-vite build && electron-builder"
   },
@@ -43,6 +44,19 @@
     ],
     "mac": {
       "category": "public.app-category.utilities",
+      "extendInfo": {
+        "NSCameraUsageDescription": "robust-pwd utilise la caméra uniquement en local pour le déverrouillage facial Glance."
+      },
+      "extraResources": [
+        {
+          "from": "native/glance-auth/.build/release/glance-auth",
+          "to": "bin/glance-auth"
+        },
+        {
+          "from": "native/glance-auth/.build/release/GlanceAuth_GlanceAuth.bundle",
+          "to": "bin/GlanceAuth_GlanceAuth.bundle"
+        }
+      ],
       "target": [
         {
           "target": "dmg",

@@ -10,7 +10,15 @@ import type {
 } from '../shared/types'
 import { VaultError } from './crypto'
 import { generatePassword } from './generator'
+import {
+  GlanceError,
+  clearGlanceFace,
+  enrollGlanceFace,
+  getGlanceStatus,
+  verifyGlanceFace,
+} from './glanceAuth'
 import { ImportError, parseImportContent } from './importer'
+import { checkForReleaseUpdate, openExternalReleaseUrl } from './updateChecker'
 import { VaultService } from './vault'
 
 const CLIPBOARD_CLEAR_MS = 30_000
@@ -51,7 +59,9 @@ export async function clearSensitiveClipboard(): Promise<void> {
 }
 
 function errorMessage(error: unknown): string {
-  if (error instanceof VaultError || error instanceof ImportError) return error.message
+  if (error instanceof VaultError || error instanceof ImportError || error instanceof GlanceError) {
+    return error.message
+  }
   return 'Une erreur inattendue est survenue.'
 }
 
@@ -149,5 +159,25 @@ export function registerIpc(vault: VaultService): void {
 
   ipcMain.handle('vault:touch', () => {
     vault.touch()
+  })
+
+  handle('glance:status', () => getGlanceStatus())
+  handle('glance:enroll', async (master: string) => {
+    await vault.unlock(master)
+    return enrollGlanceFace(master)
+  })
+  handle('glance:unlock', async () => {
+    const { master } = await verifyGlanceFace()
+    return unlockedResult(await vault.unlock(master))
+  })
+  handle('glance:clear', async () => {
+    await clearGlanceFace()
+    return null
+  })
+
+  handle('app:check-update', () => checkForReleaseUpdate())
+  handle('app:open-release', async (url: string) => {
+    await openExternalReleaseUrl(url)
+    return null
   })
 }

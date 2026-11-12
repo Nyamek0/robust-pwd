@@ -117,6 +117,18 @@ const api: DesktopApi = {
     }
   },
 
+  glance: {
+    status: () => ipcRenderer.invoke('glance:status'),
+    enroll: (master: string) => ipcRenderer.invoke('glance:enroll', master),
+    unlock: () => ipcRenderer.invoke('glance:unlock'),
+    clear: () => ipcRenderer.invoke('glance:clear'),
+  },
+
+  app: {
+    checkUpdate: () => ipcRenderer.invoke('app:check-update'),
+    openRelease: (url: string) => ipcRenderer.invoke('app:open-release', url),
+  },
+
   secrets: secretsApi,
 }
 

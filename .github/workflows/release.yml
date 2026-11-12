@@ -77,6 +77,10 @@ jobs:
         working-directory: desktop
         run: npm ci
 
+      - name: Compiler le helper Glance (Swift)
+        working-directory: desktop
+        run: npm run build:glance
+
       - name: Compiler l'application
         working-directory: desktop
         run: npm run build

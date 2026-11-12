@@ -16,6 +16,8 @@ desktop/node_modules/
 desktop/out/
 desktop/release/
 desktop/dist/
+desktop/native/glance-auth/.build/
+desktop/native/glance-auth/.swiftpm/
 
 # Configuration locale des outils
 .claude/settings.local.json

@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { AddEntryInput, EntryMeta, LockReason } from '@shared/types'
+import type { AddEntryInput, EntryMeta, GlanceStatus, LockReason, UpdateInfo } from '@shared/types'
 import { AuthScreen } from './components/AuthScreen'
 import { Brand } from './components/Brand'
 import { ConfirmDialog } from './components/ConfirmDialog'
+import { GlanceSetupDialog } from './components/GlanceSetupDialog'
 import { AddPasswordDialog, type SaveResult } from './components/AddPasswordDialog'
 import { Toasts, type ToastItem, type ToastKind } from './components/Toasts'
 import { VaultScreen } from './components/VaultScreen'
@@ -57,6 +58,9 @@ export default function App() {
   const [addOpen, setAddOpen] = useState(false)
   const [importing, setImporting] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<EntryMeta | null>(null)
+  const [glanceStatus, setGlanceStatus] = useState<GlanceStatus | null>(null)
+  const [glanceOpen, setGlanceOpen] = useState(false)
+  const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null)
   const { toasts, push, dismiss } = useToasts()
   const searchRef = useRef<HTMLInputElement>(null)
 
@@ -76,8 +80,18 @@ export default function App() {
     let alive = true
 
     void (async () => {
-      const result = await api.status()
+      const [result, glanceRes, updateRes] = await Promise.all([
+        api.status(),
+        api.glance.status(),
+        api.app.checkUpdate(),
+      ])
       if (!alive) return
+      if (glanceRes.ok) {
+        setGlanceStatus(glanceRes.data)
+      }
+      if (updateRes.ok && updateRes.data) {
+        setUpdateInfo(updateRes.data)
+      }
       if (!result.ok) {
         push('error', result.error)
         setPhase('locked')
@@ -173,6 +187,39 @@ export default function App() {
     },
     [],
   )
+
+  const refreshGlanceStatus = useCallback(async () => {
+    const res = await api.glance.status()
+    if (res.ok) setGlanceStatus(res.data)
+  }, [])
+
+  const handleGlanceUnlock = useCallback(async (): Promise<string | null> => {
+    const result = await api.glance.unlock()
+    if (!result.ok) return result.error
+    setEntries(result.data.entries)
+    setAutoLockSeconds(result.data.autoLockSeconds)
+    setPhase('unlocked')
+    return null
+  }, [])
+
+  const handleGlanceEnroll = useCallback(
+    async (master: string): Promise<string | null> => {
+      const result = await api.glance.enroll(master)
+      if (!result.ok) return result.error
+      await refreshGlanceStatus()
+      push('success', `Visage enregistré (${result.data.samples} échantillons).`)
+      return null
+    },
+    [push, refreshGlanceStatus],
+  )
+
+  const handleGlanceClear = useCallback(async (): Promise<string | null> => {
+    const result = await api.glance.clear()
+    if (!result.ok) return result.error
+    await refreshGlanceStatus()
+    push('info', 'Déverrouillage facial Glance désactivé.')
+    return null
+  }, [push, refreshGlanceStatus])
 
   const handleLock = useCallback(async () => {
     const result = await api.lock()
@@ -349,6 +396,44 @@ export default function App() {
 
   return (
     <div className={`app ${isMac ? 'is-mac' : ''}`}>
+      {updateInfo && (
+        <div
+          role="status"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 12,
+            padding: '6px 16px',
+            background: 'rgba(99, 102, 241, 0.16)',
+            borderBottom: '1px solid rgba(99, 102, 241, 0.35)',
+            fontSize: 13,
+            zIndex: 50,
+          }}
+        >
+          <span>
+            Nouvelle version disponible : <strong>v{updateInfo.latestVersion}</strong> (actuelle : v
+            {updateInfo.currentVersion})
+          </span>
+          <button
+            type="button"
+            className="btn btn-primary"
+            style={{ padding: '3px 10px', fontSize: 12 }}
+            onClick={() => void api.app.openRelease(updateInfo.releaseUrl)}
+          >
+            Télécharger
+          </button>
+          <button
+            type="button"
+            className="btn btn-ghost"
+            style={{ padding: '2px 8px', fontSize: 12 }}
+            onClick={() => setUpdateInfo(null)}
+            aria-label="Fermer la notification de mise à jour"
+          >
+            ×
+          </button>
+        </div>
+      )}
       {workspace === 'secrets' ? (
         <SecretsWorkspace pushToast={push} workspaceSwitcher={workspaceSwitcher} />
       ) : (
@@ -373,6 +458,10 @@ export default function App() {
               <AuthScreen
                 mode={phase}
                 onSubmit={phase === 'setup' ? handleSetup : handleUnlock}
+                glanceAvailable={Boolean(
+                  glanceStatus?.available && glanceStatus.enrolled && glanceStatus.hasSecret,
+                )}
+                onGlanceUnlock={handleGlanceUnlock}
               />
             </div>
           )}
@@ -393,9 +482,20 @@ export default function App() {
               onNew={() => setAddOpen(true)}
               onImport={() => void handleImport()}
               onLock={() => void handleLock()}
+              glanceAvailable={Boolean(glanceStatus?.available)}
+              glanceEnabled={Boolean(glanceStatus?.enrolled && glanceStatus?.hasSecret)}
+              onOpenGlance={() => setGlanceOpen(true)}
               workspaceSwitcher={workspaceSwitcher}
             />
           )}
+
+          <GlanceSetupDialog
+            open={phase === 'unlocked' && glanceOpen}
+            status={glanceStatus}
+            onClose={() => setGlanceOpen(false)}
+            onEnroll={handleGlanceEnroll}
+            onClear={handleGlanceClear}
+          />
 
           <AddPasswordDialog
             open={phase === 'unlocked' && addOpen}
